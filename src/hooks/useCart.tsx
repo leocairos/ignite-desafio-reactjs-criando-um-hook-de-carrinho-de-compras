@@ -23,11 +23,11 @@ const CartContext = createContext<CartContextData>({} as CartContextData);
 
 export function CartProvider({ children }: CartProviderProps): JSX.Element {
   const [cart, setCart] = useState<Product[]>(() => {
-    // const storagedCart = Buscar dados do localStorage
+    const storagedCart = localStorage.getItem('@RocketShoes:cart');
 
-    // if (storagedCart) {
-    //   return JSON.parse(storagedCart);
-    // }
+    if (storagedCart) {
+       return JSON.parse(storagedCart);
+    }
 
     return [];
   });
@@ -35,6 +35,24 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
   const addProduct = async (productId: number) => {
     try {
       // TODO
+      const productInCart = cart.find(product => product.id === productId);
+      if (productInCart){
+        const newCart = cart.map(product => {
+          if (product.id === productId){
+              product.amount += 1;
+          }
+          return product;
+        })
+        setCart([...newCart]);
+      } else {
+        const response = await api.get('/products');
+        const responseData = response.data as Product[];
+        const newProduct = responseData.find(product => product.id === productId) as Product;
+        newProduct.amount = 1;
+        setCart([...cart, newProduct]);
+      }
+
+      console.log('addProduct')
     } catch {
       // TODO
     }
@@ -43,6 +61,8 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
   const removeProduct = (productId: number) => {
     try {
       // TODO
+      const newCart = cart.filter(product => product.id !== productId);
+      setCart([...newCart]);
     } catch {
       // TODO
     }
@@ -54,6 +74,16 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
   }: UpdateProductAmount) => {
     try {
       // TODO
+      const productInCart = cart.find(product => product.id === productId);
+      if (productInCart){
+        const newCart = cart.map(product => {
+          if (product.id === productId){
+              product.amount = amount;
+          }
+          return product;
+        })
+        setCart([...newCart]);
+      }
     } catch {
       // TODO
     }
